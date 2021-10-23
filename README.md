@@ -18,3 +18,7 @@ This proxy checker, uses multiple URL's, the reason is because, we don't want to
 Please only use this for educational purposes!
 
 Thanks for using this.
+
+TODO:
+- Implement a timeout setter.
+- Multi URL toggle.
