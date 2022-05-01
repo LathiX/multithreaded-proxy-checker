@@ -3,16 +3,10 @@ import threading
 import requests
 import random
 
-os.system('cls')
-
-#
-# UI GENERATION
-#
-
 try:
     os.remove("goodproxies.txt")
 except:
-    print("")
+    pass
 
 def BlankSpace(count):
     result = ""
@@ -28,13 +22,7 @@ Col = {
 }
 
 def Inp(text, type):
-    if type == "int":
-        inp = input(text + " ")
-        inp = int(inp)
-    elif type == "str":
-        inp = input(text + " ")
-        inp = str(inp)
-    elif type == "bool":
+    if type == "bool":
         inp = input(text + " (Y/N) ")
         inp = str(inp).lower()
         try: 
@@ -42,8 +30,10 @@ def Inp(text, type):
             inp = True
         except:
             inp = False
-            
-    os.system('cls')
+    else:
+        inp = input(text + " ")
+        inp = type(inp)
+
     Header()
         
     return inp
@@ -52,8 +42,13 @@ def InputRender(color):
     result = Col["BrightGray"] + "[" + color + "+" + Col["BrightGray"] + "] " + color
     return result
     
+def ThrowError(error):
+    print(error)
+    input("Press any key, to close this window.")
+    os.close()
 
 def Header():
+    os.system('cls')
     print("\n" + Col["BrightRed"]                       )
     print(BlankSpace(47) + " _       _   _     _       ")
     print(BlankSpace(47) + "| | __ _| |_| |__ (_)_  __ ")
@@ -63,13 +58,10 @@ def Header():
     print("" + Col["BrightWhite"])
     print(BlankSpace(47) + "+========================+ \n")
 
-def ThrowError(error):
-    print(error)
-    input("Press any key, to close this window.")
-    os.close()
 
 #
-# Actual work is being done here.
+# Splits one array into multiple arrays, based on the count given.
+# This for the multi threading part.
 #
 
 def SplitIntoMultiple(array, count):
@@ -89,6 +81,9 @@ def SplitIntoMultiple(array, count):
 
     return splitArray
 
+#
+# Used for making an array out of a file, when given the file name.
+#
 def MakeArrayFromFile(file):
     try:
         file.index(" ")
@@ -112,46 +107,66 @@ def MakeArrayFromFile(file):
 
         return result
 
-global goodProxies
 goodProxies = []
+
+#
+# Checking the proxies on the website.
+#
 
 def CheckProxies(index):
     for proxy in proxies[index]:
         proxyDict = { "http": "http://" + proxy, "https": "https://" + proxy, }
 
         try:
-            r = requests.get(random.choice(urls), proxies=proxyDict, timeout=4)
+            r = requests.get(random.choice(urls), proxies=proxyDict, timeout=timeout)
             print(InputRender(Col["BrightGreen"]) + "Working proxy... " + Col["BrightWhite"] + proxy)
             goodProxies.append(proxy)
         except:
             print(InputRender(Col["BrightRed"]) + "Timed out... " + Col["BrightWhite"] + proxy)
-    # print(proxies)
 
+#
+# Command line part, for the user.
+#
 
-print("\n" + Col["BrightRed"]                       )
-print(BlankSpace(47) + " _       _   _     _       ")
-print(BlankSpace(47) + "| | __ _| |_| |__ (_)_  __ ")
-print(BlankSpace(47) + "| |/ _` | __| '_ \| \ \/ / ")
-print(BlankSpace(47) + "| | (_| | |_| | | | |>  <  ")
-print(BlankSpace(47) + "|_|\__,_|\__|_| |_|_/_/\_\ ")
-print("" + Col["BrightWhite"])
-print(BlankSpace(47) + "+========================+ \n")
-threads = Inp("Thread count.", "int")
-proxies = SplitIntoMultiple(MakeArrayFromFile(Inp("The file thats contains proxies.", "str")), threads)
-urls = MakeArrayFromFile(Inp("URL list.", "str"))
+Header()
+
+threads = Inp("Thread count.", int)
+timeout = Inp("Timeout in seconds.", int)
+
+proxies = SplitIntoMultiple(MakeArrayFromFile(Inp("The file thats contains proxies.", str)), threads)
+
+multiUrl = Inp("Multi URL?", "bool")
+
+if multiUrl:
+    urls = MakeArrayFromFile(Inp("URL list.", str))
+else:
+    urls = ["https://" + Inp("DOMAIN to test on", str)]
+
 save = Inp("Save good proxies.", "bool")
 
 threadlist = []
+
+#
+# Multi threading preparing/creating.
+#
+
 for i in range(threads):
     thread = threading.Thread(target=CheckProxies, args=(i,))
     threadlist.append(thread)
     thread.start()
 
+#
+# Waiting for the threads to finish, then starting everyone of them at once.
+#
+
 for thread in threadlist:
     thread.join()
 
-print("")
-print("RESULTS: " + str(len(goodProxies)) + Col["BrightGray"] + "/" + Col["BrightWhite"] + str(len(proxies)))
+#
+# Saving/displaying count of the good proxies.
+#
+
+print("\nRESULTS: " + str(len(goodProxies)) + Col["BrightGray"] + "/" + Col["BrightWhite"] + str(len(proxies)))
 if save == True:
     saveFile = open("goodproxies.txt", "a")
     for proxy in goodProxies:
@@ -160,6 +175,4 @@ if save == True:
     saveFile.close()
 
 print("SAVED RESULTS TO goodproxies.txt.")
-print("")
-
 input("")
