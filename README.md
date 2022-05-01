@@ -20,5 +20,5 @@ Please only use this for educational purposes!
 Thanks for using this.
 
 TODO:
-- Implement a timeout setter.
-- Multi URL toggle.
+- Implement a timeout setter.  ✅
+- Multi URL toggle. ✅
