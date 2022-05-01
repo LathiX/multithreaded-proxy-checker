@@ -1,4 +1,4 @@
-# Multithreaded Proxy Checker
+# Multithreaded HTTPS/HTTP Proxy Checker
 Features:
 - Multithreading.
 - Fast, accurate.
